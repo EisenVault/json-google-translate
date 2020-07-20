@@ -1,0 +1,6 @@
+{
+    "source_team": "Equipo fuente",
+    "remove_workflow": "Eliminar flujo de trabajo",
+    "this_will_remove_any_succeeding_workflows_proceed": "Esto eliminará los flujos de trabajo posteriores. ¿Continuar?",
+    "edit_workflow": "Editar flujo de trabajo"
+}
