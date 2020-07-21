@@ -33,7 +33,7 @@ async function translateText() {
     translations = Array.isArray(translations) ? translations : [translations];
     console.log("Translations:");
     translations.forEach((translation, i) => {
-      desktopTranslated[key] = translation;
+      desktopTranslated[key] = translation.replace(/"/g, "'");
       console.log(`${desktopEN[key]} => (${target}) ${translation}`);
     });
   }
