@@ -1,55 +1,55 @@
+var fs = require("fs");
+const { Translate } = require("@google-cloud/translate").v2;
+
 /**
  * TODO(developer): Specify the target language code below
  * This script auto-detects source language
  */
-var target = "ar"; //Arabic
+const targetLanguage = "en";
 
 /**
  * TODO(developer): Specify the source and targe JSON file paths
  */
-var targetJSON = "test-ar.json";
-var sourceJSON = "test-en.json";
+const targetFile = "en.json";
+const sourceFile = "cs.json";
 
-var fs = require("fs");
+const DEBUG = false;
 
-// Imports the Google Cloud client library
-const { Translate } = require("@google-cloud/translate").v2;
+const googleTranslate = new Translate();
 
-// Creates a client
-const translate = new Translate();
+translateFile(sourceFile, targetFile, targetLanguage);
 
-var desktopEN = JSON.parse(fs.readFileSync(sourceJSON, "UTF-8"));
-console.log(desktopEN);
-var desktopTranslated = {};
-
-translateText();
-
-async function translateText() {
-  // Translates the text into the target language. "text" can be a string for
-  // translating a single piece of text, or an array of strings for translating
-  // multiple texts.
-  for (var key in desktopEN) {
-    let [translations] = await translate.translate(desktopEN[key], target);
-    translations = Array.isArray(translations) ? translations : [translations];
-    console.log("Translations:");
-    translations.forEach((translation, i) => {
-      desktopTranslated[key] = translation.replace(/"/g, "'");
-      console.log(`${desktopEN[key]} => (${target}) ${translation}`);
-    });
-  }
-  console.log(desktopTranslated);
-  writeJSONToFile(desktopTranslated);
+async function translateFile(sourceFile, targetFile, targetLanguage) {
+  const sourceJSON = JSON.parse(fs.readFileSync(sourceFile, "UTF-8"));
+  log(`sourceJSON: ${JSON.stringify(sourceJSON)}`)
+  const translatedJSON = await translateJSON(sourceJSON, targetLanguage);
+  const translatedText = JSON.stringify(translatedJSON, null, 4);
+  log(`translated text: ${translatedText}`);
+  fs.writeFileSync(targetFile, translatedText);
 }
 
-function writeJSONToFile(jsonObj) {
-  // convert JSON object to string
-  const data = JSON.stringify(jsonObj, null, 4);
-
-  // write JSON string to a file
-  fs.writeFile(targetJSON, data, (err) => {
-    if (err) {
-      throw err;
+async function translateJSON(json, targetLanguage) {
+  for (const [key, value] of Object.entries(json)) {
+    if(typeof value === 'string') {
+      log(`found: ${key} == ${value} which is string`);
+      json[key] = await translateString(value, targetLanguage);
+    } else {
+      log(`found: ${key} which is object`);
+      json[key] = await translateJSON(value, targetLanguage);
     }
-    console.log("JSON data is saved.");
-  });
+  };
+  return json;
+}
+
+async function translateString(string, targetLanguage) {
+  const translationData = await googleTranslate.translate(string, targetLanguage);
+  const translation = translationData[0];
+  log(`translated "${string}" as "${translation}"`);
+  return translation;
+}
+
+function log(string) {
+  if(DEBUG === true) {
+    console.log(string);
+  }
 }
