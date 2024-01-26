@@ -1,5 +1,4 @@
 var fs = require("fs");
-const { constant } = require("lodash");
 const { Translate } = require("@google-cloud/translate").v2;
 
 /**
